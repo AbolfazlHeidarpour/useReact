@@ -1,4 +1,12 @@
-import { ChangeEventHandler, useRef, useState } from "react";
+import { ChangeEventHandler, useEffect, useRef, useState } from "react";
+
+const initialValues: InputValues = {
+  checked: false, 
+  value: '', 
+  date: null,
+  number: 0, 
+  files: null
+};
 
 /**
  * @author Abolfazl Heidarpour
@@ -24,12 +32,14 @@ export interface InputValues {
  * @property {() => void} focus 
  * @property {() => void} click
  * @property {() => void} blur
+ * @property {() => void} reset
  */
 export interface InputMethods {
   readonly onChange: ChangeEventHandler<HTMLInputElement>;
   readonly focus: () => void;
   readonly click: () => void;
   readonly blur: () => void;
+  readonly reset: () => void;
 }
 
 export type UseInput = [InputValues, InputMethods];
@@ -39,21 +49,8 @@ export type UseInput = [InputValues, InputMethods];
  * @function useInput
  * @description Utility hook for working with input elements
  */
-export default function useInput(
-  { 
-    checked = false, 
-    value = '', 
-    date = null,
-    number = 0, 
-    files = null
-  }: InputValues): UseInput {
-  const [state, setState] = useState<InputValues>({
-    checked, 
-    value, 
-    date, 
-    number, 
-    files
-  });
+export default function useInput(defaultValues = initialValues): UseInput {
+  const [state, setState] = useState<InputValues>(defaultValues);
   const ref = useRef<HTMLInputElement>(null);
 
   const onChange: ChangeEventHandler<HTMLInputElement> = e => {
@@ -82,5 +79,11 @@ export default function useInput(
 
   const click = () => ref.current?.click();
 
-  return [state, { onChange, focus, click, blur }];
+  const reset = () => setState(defaultValues);
+
+  useEffect(() => {
+    setState(defaultValues);
+  }, [defaultValues]);
+
+  return [state, { onChange, focus, click, blur, reset }];
 }
